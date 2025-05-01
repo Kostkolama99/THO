@@ -1,20 +1,25 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="cs">
 <head>
     <meta charset="UTF-8">
-    <title>Teorie her – simulace</title>
+    <title>Teorie her</title>
 </head>
 <body>
-    <h1>Simulace vězňova dilematu</h1>
-    <form method="POST">
-        <button type="submit">Spustit hru</button>
-    </form>
-
-    {% if vysledky %}
-        <h2>Výsledky</h2>
-        <p>{{ vysledky|safe }}</p>
-        {{ matice|safe }}
-        <img src="data:image/png;base64,{{ graf }}" alt="Graf vývoje">
+    <h1>Vězeňovo dilema – Tah {{ session['tah'] + 1 }}/10</h1>
+    {% if session['tah'] < 10 %}
+        <form method="post" action="/tah">
+            <button type="submit" name="volba" value="S">Spolupráce (S)</button>
+            <button type="submit" name="volba" value="Z">Zrada (Z)</button>
+        </form>
+    {% else %}
+        <a href="/vysledek">Zobrazit výsledky</a>
     {% endif %}
+
+    <h2>Historie tahů</h2>
+    <ul>
+        {% for tah, v1, v2, z in session['log'] %}
+            <li><strong>Tah {{ tah }}:</strong> Hráč 1: {{ v1 }}, Hráč 2: {{ v2 }} – {{ z }}</li>
+        {% endfor %}
+    </ul>
 </body>
 </html>
