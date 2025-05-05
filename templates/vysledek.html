@@ -9,6 +9,7 @@
     <p>Hráč 1: {{ score_1 }} bodů</p>
     <p>Hráč 2: {{ score_2 }} bodů</p>
     <img src="{{ url_for('static', filename='graf.png') }}" alt="graf">
+    
     <h2>Statistika</h2>
     <ul>
         <li>Spolupráce: {{ zaznamy['spoluprace'] }}x</li>
@@ -16,6 +17,7 @@
         <li>Úspěšná zrada hráče 2: {{ zaznamy['uspesna_zrada_hrace_2'] }}</li>
         <li>Oboustranná zrada: {{ zaznamy['nespoluprace'] }}</li>
     </ul>
-    <a href="/">Hrát znovu</a>
+
+    <a href="{{ url_for('reset') }}"><button>Hrát znovu</button></a>
 </body>
 </html>

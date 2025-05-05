@@ -5,7 +5,7 @@
     <title>Teorie her</title>
 </head>
 <body>
-    <h1>Vězeňovo dilema – Tah {{ session['tah'] + 1 }}/10</h1>
+    <h1>Vězeňovo dilema – Tah {{ session['tah']}}/10</h1>
     {% if session['tah'] < 10 %}
         <form method="post" action="/tah">
             <button type="submit" name="volba" value="S">Spolupráce (S)</button>

@@ -1,15 +1,17 @@
 from flask import Flask, render_template, request, redirect, url_for, session
+import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
+
 import os
 import random
 
 app = Flask(__name__)
-app.secret_key = os.urandom(24)  # Bezpečný tajný klíč pro session
+app.secret_key = os.urandom(24)
 
 @app.route('/')
 def index():
-    # Inicializace session při prvním spuštění hry
-    if 'tah' not in session:  # Když ještě neexistují session hodnoty (první načtení)
+    if 'tah' not in session:
         session['score_1'] = 0
         session['score_2'] = 0
         session['tah'] = 0
@@ -26,37 +28,33 @@ def index():
             'spoluprace_1': 0,
             'spoluprace_2': 0
         }
-        session['volba_2'] = 'S'  # Výchozí volba pro druhého hráče
-
-    # Debug výstup pro session
-    print(f"Session při načítání: {session}")
-    
+        session['volba_2'] = 'S'
     return render_template('index.html')
+
+@app.route('/reset')
+def reset():
+    session.clear()
+    return redirect(url_for('index'))
 
 @app.route('/tah', methods=['POST'])
 def tah():
-    # Pokud bylo dosaženo 10. tahu, přesměruj na výsledek
     if session['tah'] >= 10:
         return redirect(url_for('vysledek'))
 
-    # Debug výstupy pro stav session
-    print(f"Požadavek na tah: {session}")
-    
     volba_1 = request.form.get('volba')
     if volba_1 not in ['S', 'Z']:
         return redirect(url_for('index'))
 
     tah = session['tah']
     volba_2 = session['volba_2']
-    
+
     if tah > 0:
         if random.random() < 0.1:
-            volba_2 = 'Z' if session['volba_2'] == 'S' else 'S'
+            volba_2 = 'Z' if volba_2 == 'S' else 'S'
         else:
             volba_2 = volba_1
-    session['volba_2'] = volba_2
 
-    # Záznamy pro různé výsledky hry
+    session['volba_2'] = volba_2
     s = session['zaznamy']
 
     if volba_1 == 'S' and volba_2 == 'S':
@@ -87,28 +85,20 @@ def tah():
         s['zrada_2'] += 1
         zprava = "Oba zradili."
 
-    # Uložení skóre a historie
     session['prubeh_1'].append(session['score_1'])
     session['prubeh_2'].append(session['score_2'])
     session['log'].append((tah + 1, volba_1, volba_2, zprava))
     session['tah'] += 1
 
-    # Debug výstupy pro konec tahu
-    print(f"Po tahu: {session}")
-    
     return redirect(url_for('index'))
 
 @app.route('/vysledek')
 def vysledek():
-    tahy = 10
+    if 'score_1' not in session or session['tah'] < 10:
+        return redirect(url_for('index'))
+
     s = session['zaznamy']
 
-    # Debug výstup pro výsledky
-    print(f"Výsledky: {session['score_1']} vs {session['score_2']}")
-    
-    def pct(x): return round(x / tahy * 100)
-
-    # Vykreslení grafu
     fig, ax = plt.subplots()
     ax.plot(session['prubeh_1'], label="Hráč 1", color="blue")
     ax.plot(session['prubeh_2'], label="Hráč 2", color="red")
@@ -118,12 +108,19 @@ def vysledek():
     ax.legend()
     ax.grid(True)
 
+    if not os.path.exists('static'):
+        os.makedirs('static')
+
     path = os.path.join('static', 'graf.png')
     fig.savefig(path)
     plt.close()
 
-    return render_template('vysledek.html', zaznamy=s, tahy=tahy, path=path,
-                           score_1=session['score_1'], score_2=session['score_2'])
+    return render_template('vysledek.html',
+                           zaznamy=s,
+                           tahy=session['tah'],
+                           path=path,
+                           score_1=session['score_1'],
+                           score_2=session['score_2'])
 
 if __name__ == '__main__':
     app.run(debug=True)
