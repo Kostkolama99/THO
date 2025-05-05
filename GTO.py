@@ -48,13 +48,17 @@ def tah():
     tah = session['tah']
     volba_2 = session['volba_2']
 
+
     if tah > 0:
-        if random.random() < 0.1:
-            volba_2 = 'Z' if volba_2 == 'S' else 'S'
-        else:
-            volba_2 = volba_1
+        volba_2 = session['minula_volba_hrace_1']
+        if random.random() < 0.25:
+            volba_2 = "S" if volba_1 == "Z" else "Z"
+    else:
+        volba_2 = "S"
+
 
     session['volba_2'] = volba_2
+    session['minula_volba_hrace_1'] = volba_1
     s = session['zaznamy']
 
     if volba_1 == 'S' and volba_2 == 'S':
